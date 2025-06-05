@@ -1,0 +1,29 @@
+# 应用配置（TOML格式示例）
+
+[server]
+port = 8080
+user_portal_port = 8081
+admin_portal_port = 8082
+cockpit_dashboard_port = 8083
+
+[database]
+host = "localhost"
+port = 5432
+user = "tianshu"
+password = "tianshu_Postgres"
+dbname = "tianshu"
+sslmode = "disable"
+
+[redis]
+host = "localhost"
+port = 6379
+password = ""
+db = 0
+
+[jwt]
+secret = "your_jwt_secret"
+expire_hours = 24
+
+[tenant]
+default_logo = ""
+default_theme = "light"
