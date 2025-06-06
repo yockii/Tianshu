@@ -47,3 +47,18 @@ func (r *roleRepository) List(tenantID uint, offset, limit int) ([]*model.Role, 
 	err := db.DB.Where("tenant_id = ?", tenantID).Offset(offset).Limit(limit).Find(&roles).Error
 	return roles, total, err
 }
+
+// UnsetDefaultRoles 将租户下所有角色的 is_default 设置为 false
+func (r *roleRepository) UnsetDefaultRoles(tenantID uint) error {
+	return db.DB.Model(&model.Role{}).Where("tenant_id = ?", tenantID).Update("is_default", false).Error
+}
+
+// GetDefaultRole 获取租户下被标记为默认的角色
+func (r *roleRepository) GetDefaultRole(tenantID uint) (*model.Role, error) {
+	var role model.Role
+	err := db.DB.Where("tenant_id = ? AND is_default = TRUE", tenantID).First(&role).Error
+	if err != nil {
+		return nil, err
+	}
+	return &role, nil
+}

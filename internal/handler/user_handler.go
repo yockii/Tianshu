@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -22,9 +23,14 @@ func RegisterUserRoutes(app *fiber.App) {
 	r.Post("/login", userLogin)
 	// protected routes
 	r.Use(middleware.AuthMiddleware)
+	// self profile
 	r.Get("/profile", userProfile)
 	r.Put("/profile", userUpdate)
-	r.Get("/list", userList)
+	// tenant-level user management
+	r.Get("/list", middleware.RequirePermission("user:list"), userList)
+	r.Post("/create", middleware.RequirePermission("user:create"), createUser)
+	r.Put("/:id", middleware.RequirePermission("user:update"), updateUserByID)
+	r.Delete("/:id", middleware.RequirePermission("user:delete"), deleteUser)
 }
 
 func userRegister(c *fiber.Ctx) error {
@@ -134,7 +140,9 @@ func userLogin(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"code": 500, "message": "token生成失败"})
 	}
 	// 返回包含用户数据和 token
-	return c.JSON(fiber.Map{"code": 200, "message": "登录成功", "data": fiber.Map{"token": tokenStr, "user": user}})
+	// 获取并附加用户权限列表
+	perms, _ := service.RelationService.ListUserPermissions(user.ID)
+	return c.JSON(fiber.Map{"code": 200, "message": "登录成功", "data": fiber.Map{"token": tokenStr, "user": user, "permissions": perms}})
 }
 
 func userProfile(c *fiber.Ctx) error {
@@ -179,4 +187,100 @@ func userList(c *fiber.Ctx) error {
 		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
 	}
 	return c.JSON(fiber.Map{"code": 200, "message": "查询成功", "data": fiber.Map{"list": list, "total": total}})
+}
+
+// createUser allows tenant admins to create users under their tenant
+func createUser(c *fiber.Ctx) error {
+	tid := c.Locals("tenantId").(int)
+	uid := c.Locals("userId").(int)
+	type Req struct {
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		Phone    string `json:"phone"`
+		Password string `json:"password"`
+		Status   int    `json:"status"`
+	}
+	var req Req
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{"code": 400, "message": "参数错误", "data": nil})
+	}
+	// hash password
+	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return c.Status(500).JSON(fiber.Map{"code": 500, "message": "密码加密失败", "data": nil})
+	}
+	user := model.User{TenantID: uint(tid), Username: req.Username, Email: req.Email, Phone: req.Phone, PasswordHash: string(hash), Status: req.Status}
+	if err := service.UserService.Create(&user); err != nil {
+		return c.Status(500).JSON(fiber.Map{"code": 500, "message": err.Error(), "data": nil})
+	}
+	// 默认角色自动分配
+	if defRole, err := service.RoleService.GetDefaultRole(uint(tid)); err == nil {
+		_ = service.RelationService.AssignRoleToUser(user.ID, defRole.ID)
+		// 记录默认角色分配日志
+		logDef := model.OperationLog{TenantID: uint(tid), UserID: uint(uid), Action: "user:assign_default_role", Detail: fmt.Sprintf("Assigned default role ID:%d to user ID:%d", defRole.ID, user.ID)}
+		service.OperationLogService.Create(&logDef)
+	}
+	// write operation log
+	log := model.OperationLog{TenantID: uint(tid), UserID: uint(uid), Action: "user:create", Detail: fmt.Sprintf("Created user ID:%d", user.ID)}
+	service.OperationLogService.Create(&log)
+	return c.JSON(fiber.Map{"code": 200, "message": "创建成功", "data": user})
+}
+
+// updateUserByID updates any user within the same tenant
+func updateUserByID(c *fiber.Ctx) error {
+	id, err := strconv.ParseUint(c.Params("id"), 10, 64)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"code": 400, "message": "参数错误", "data": nil})
+	}
+	// 校验用户归属租户
+	tid := c.Locals("tenantId").(int)
+	existing, err2 := service.UserService.GetByID(uint(id))
+	if err2 != nil || existing == nil || existing.TenantID != uint(tid) {
+		return c.Status(403).JSON(fiber.Map{"code": 403, "message": "非法用户", "data": nil})
+	}
+	var req model.User
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{"code": 400, "message": "参数错误", "data": nil})
+	}
+	// enforce tenant
+	req.ID = uint(id)
+	req.TenantID = uint(tid)
+	// hash new password if provided
+	if req.PasswordHash != "" {
+		if h, e := bcrypt.GenerateFromPassword([]byte(req.PasswordHash), bcrypt.DefaultCost); e == nil {
+			req.PasswordHash = string(h)
+		}
+	}
+	if err := service.UserService.Update(&req); err != nil {
+		return c.Status(500).JSON(fiber.Map{"code": 500, "message": err.Error(), "data": nil})
+	}
+	// write operation log
+	uid := c.Locals("userId").(int)
+	tid = c.Locals("tenantId").(int)
+	log := model.OperationLog{TenantID: uint(tid), UserID: uint(uid), Action: "user:update", Detail: fmt.Sprintf("Updated user ID:%d", req.ID)}
+	service.OperationLogService.Create(&log)
+	return c.JSON(fiber.Map{"code": 200, "message": "更新成功", "data": req})
+}
+
+// deleteUser deletes a user within the same tenant
+func deleteUser(c *fiber.Ctx) error {
+	id, err := strconv.ParseUint(c.Params("id"), 10, 64)
+	if err != nil {
+		return c.Status(400).JSON(fiber.Map{"code": 400, "message": "参数错误", "data": nil})
+	}
+	// 校验用户归属租户
+	tid := c.Locals("tenantId").(int)
+	existing, err2 := service.UserService.GetByID(uint(id))
+	if err2 != nil || existing == nil || existing.TenantID != uint(tid) {
+		return c.Status(403).JSON(fiber.Map{"code": 403, "message": "非法用户", "data": nil})
+	}
+	if err := service.UserService.Delete(uint(id)); err != nil {
+		return c.Status(500).JSON(fiber.Map{"code": 500, "message": err.Error(), "data": nil})
+	}
+	// write operation log
+	uid := c.Locals("userId").(int)
+	tid := c.Locals("tenantId").(int)
+	log := model.OperationLog{TenantID: uint(tid), UserID: uint(uid), Action: "user:delete", Detail: fmt.Sprintf("Deleted user ID:%d", id)}
+	service.OperationLogService.Create(&log)
+	return c.JSON(fiber.Map{"code": 200, "message": "删除成功", "data": nil})
 }

@@ -122,6 +122,26 @@ const routes: RouteRecordRaw[] = [
           title: '个人中心',
           requiresAuth: true 
         }
+      },
+      {
+        path: 'roles',
+        name: 'RoleSettings',
+        component: () => import('@/views/dashboard/RoleSettings.vue'),
+        meta: {
+          title: '角色管理',
+          requiresAuth: true,
+          permission: 'role:list'
+        }
+      },
+      {
+        path: 'logs',
+        name: 'Logs',
+        component: () => import('@/views/dashboard/Logs.vue'),
+        meta: {
+          title: '操作日志',
+          requiresAuth: true,
+          permission: 'logs:list'
+        }
       }
     ]
   },
@@ -139,17 +159,16 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior(to, from, savedPosition) {
+  scrollBehavior(_to, _from, savedPosition) {
     if (savedPosition) {
       return savedPosition
-    } else {
-      return { top: 0 }
     }
+    return { top: 0 }
   }
 })
 
 // 路由守卫
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   // 设置页面标题
   if (to.meta?.title) {
     document.title = `${to.meta.title} - 天枢无人机智能管控平台`

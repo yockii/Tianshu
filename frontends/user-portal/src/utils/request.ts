@@ -1,6 +1,5 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
-import type { ApiResponse } from '@/types'
 
 // 创建axios实例
 const request = axios.create({
@@ -77,19 +76,9 @@ export default request
 
 // 通用API方法
 export const api = {
-  get: <T = any>(url: string, params?: any): Promise<ApiResponse<T>> => {
-    return request.get(url, { params })
-  },
-  
-  post: <T = any>(url: string, data?: any): Promise<ApiResponse<T>> => {
-    return request.post(url, data)
-  },
-  
-  put: <T = any>(url: string, data?: any): Promise<ApiResponse<T>> => {
-    return request.put(url, data)
-  },
-  
-  delete: <T = any>(url: string): Promise<ApiResponse<T>> => {
-    return request.delete(url)
-  }
+  get: <T = any>(url: string, params?: any): Promise<T> => request.get(url, { params }),
+  post: <T = any>(url: string, data?: any): Promise<T> => request.post(url, data),
+  put: <T = any>(url: string, data?: any): Promise<T> => request.put(url, data),
+  // delete can send request body via data property
+  delete: <T = any>(url: string, data?: any): Promise<T> => request.delete(url, { data })
 }

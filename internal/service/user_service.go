@@ -29,3 +29,8 @@ func (s *userService) Update(user *model.User) error {
 func (s *userService) List(tenantID uint, offset, limit int) ([]*model.User, int64, error) {
 	return repository.UserRepository.List(tenantID, offset, limit)
 }
+
+// Delete removes a user by ID
+func (s *userService) Delete(id uint) error {
+	return repository.UserRepository.Delete(id)
+}

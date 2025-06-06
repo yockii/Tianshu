@@ -1,0 +1,21 @@
+{
+    "inputs": [
+      
+    ],
+    "servers": {
+        "mcp-feedback-enhanced": {
+            "command": "uvx",
+            "args": [
+                "mcp-feedback-enhanced@latest"
+            ],
+            "timeout": 600,
+            "env": {
+                "FORCE_WEB": "true",
+                "MCP_DEBUG": "false"
+            },
+            "autoApprove": [
+                "interactive_feedback"
+            ]
+        }
+    }
+}

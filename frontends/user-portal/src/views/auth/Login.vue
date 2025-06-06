@@ -31,6 +31,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { api } from '@/utils/request'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
 const formRef = ref()
@@ -51,16 +52,16 @@ const onLogin = () => {
     if (!valid) return
     loading.value = true
     try {
-      const res = await api.post('/user/login', form.value)
-      if (res.code === 200) {
-        localStorage.setItem('token', res.data.token)
-        localStorage.setItem('userInfo', JSON.stringify(res.data.user))
-        localStorage.setItem('tenantId', res.data.user.tenantId)
-        ElMessage.success('登录成功')
-        router.push('/dashboard')
-      } else {
-        ElMessage.error(res.message || '登录失败')
-      }
+      const { token, user, permissions } = await api.post('/user/login', form.value)
+      localStorage.setItem('token', token)
+      localStorage.setItem('userInfo', JSON.stringify(user))
+      localStorage.setItem('tenantId', user.tenantId)
+      // initialize user store
+      const userStore = useUserStore()
+      userStore.setUser(user)
+      userStore.setPermissions(permissions)
+      ElMessage.success('登录成功')
+      router.push('/dashboard')
     } catch (e: any) {
       ElMessage.error(e.message || '登录失败')
     } finally {

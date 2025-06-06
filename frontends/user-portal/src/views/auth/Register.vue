@@ -86,12 +86,12 @@ const onRegister = () => {
     if (!valid) return
     loading.value = true
     try {
-      const res = await api.post('/user/register', form.value)
-      if (res.tenant && res.admin) {
+      const { tenant, admin } = await api.post<{ tenant: any; admin: any }>('/user/register', form.value)
+      if (tenant && admin) {
         ElMessage.success('注册成功，请登录')
         router.push('/login')
       } else {
-        ElMessage.error(res.message || '注册失败')
+        ElMessage.error('注册失败')
       }
     } catch (e: any) {
       ElMessage.error(e.message || '注册失败')

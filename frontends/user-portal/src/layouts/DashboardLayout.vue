@@ -2,12 +2,7 @@
   <el-container class="dashboard-layout">
     <el-aside width="220px">
       <el-menu :default-active="$route.name" router>
-        <el-menu-item index="Dashboard" @click="$router.push('/dashboard')">工作台</el-menu-item>
-        <el-menu-item index="Devices" @click="$router.push('/dashboard/devices')">设备管理</el-menu-item>
-        <el-menu-item index="Missions" @click="$router.push('/dashboard/missions')">任务管理</el-menu-item>
-        <el-menu-item index="Users" @click="$router.push('/dashboard/users')">用户管理</el-menu-item>
-        <el-menu-item index="TenantSettings" @click="$router.push('/dashboard/tenant')">租户设置</el-menu-item>
-        <el-menu-item index="Profile" @click="$router.push('/dashboard/profile')">个人中心</el-menu-item>
+        <el-menu-item v-for="item in menuItems" :index="item.name" :key="item.name" @click="$router.push(item.route)">{{ item.label }}</el-menu-item>
       </el-menu>
     </el-aside>
     <el-container>
@@ -23,11 +18,35 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useUserStore } from '@/stores/user'
+
 function logout() {
   localStorage.removeItem('token')
   localStorage.removeItem('userInfo')
   window.location.href = '/login'
 }
+const userStore = useUserStore()
+const menuItems = computed(() => {
+  const items = [
+    { name: 'Dashboard', label: '工作台', route: '/dashboard' },
+    { name: 'Devices', label: '设备管理', route: '/dashboard/devices' },
+    { name: 'Missions', label: '任务管理', route: '/dashboard/missions' }
+  ]
+  if (userStore.hasPermission('user:list')) {
+    items.push({ name: 'Users', label: '用户管理', route: '/dashboard/users' })
+  }
+  if (userStore.hasPermission('tenant:update')) {
+    items.push({ name: 'TenantSettings', label: '租户设置', route: '/dashboard/tenant' })
+  }
+  if (userStore.hasPermission('role:list')) {
+    items.push({ name: 'RoleSettings', label: '角色管理', route: '/dashboard/roles' })
+  }
+  if (userStore.hasPermission('logs:list')) {
+    items.push({ name: 'Logs', label: '操作日志', route: '/dashboard/logs' })
+  }
+  return items
+})
 </script>
 
 <style scoped>
