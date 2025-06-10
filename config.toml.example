@@ -27,3 +27,11 @@ expire_hours = 24
 [tenant]
 default_logo = ""
 default_theme = "light"
+
+[mqtt]
+use_embedded = true
+listen_addr = ":1883"
+
+[dji]
+appKey = ""
+appLicense = ""

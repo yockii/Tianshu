@@ -1,4 +1,3 @@
-// 驾驶舱大屏端服务入口
 package main
 
 import (
@@ -6,7 +5,9 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/yockii/Tianshu/internal/handler"
 	"github.com/yockii/Tianshu/internal/model"
+	"github.com/yockii/Tianshu/internal/mqtt"
 	"github.com/yockii/Tianshu/pkg/cache"
 	"github.com/yockii/Tianshu/pkg/config"
 	"github.com/yockii/Tianshu/pkg/db"
@@ -24,9 +25,26 @@ func main() {
 	}
 	cache.InitRedis()
 
+	if config.Cfg.MQTT.UseEmbedded {
+		// 启动内嵌 MQTT 客户端，连接大疆 MQTT 网关
+		mqtt.Start()
+		defer mqtt.Close()
+	}
+
 	app := fiber.New()
 
-	// TODO: 注册大屏专属路由（如 /api/dashboard/*）
+	// 注册路由
+	// 用户端
+	{
+		userEndpoint := app.Group("/api/v1/")
+		handler.RegisterTenantRoutes(userEndpoint)
+		handler.RegisterUserRoutes(userEndpoint)
+		// Role, Permission, Relation and Log routes
+		handler.RegisterRoleRoutes(userEndpoint)
+		handler.RegisterPermissionRoutes(userEndpoint)
+		handler.RegisterRelationRoutes(userEndpoint)
+		handler.RegisterLogRoutes(userEndpoint)
+	}
 
 	portStr := strconv.Itoa(config.Cfg.Server.CockpitDashboardPort)
 	log.Printf("Cockpit Dashboard running at :%s", portStr)

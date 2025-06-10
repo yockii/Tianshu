@@ -15,6 +15,7 @@ type Config struct {
 	Redis    RedisConfig
 	JWT      JWTConfig
 	Tenant   TenantConfig
+	MQTT     MQTTConfig
 }
 
 type ServerConfig struct {
@@ -48,6 +49,16 @@ type JWTConfig struct {
 type TenantConfig struct {
 	DefaultLogo  string `mapstructure:"default_logo"`
 	DefaultTheme string `mapstructure:"default_theme"`
+}
+
+// MQTTConfig holds settings for embedded broker and DJI Cloud MQTT connection
+type MQTTConfig struct {
+	UseEmbedded bool   `mapstructure:"use_embedded"`
+	ListenAddr  string `mapstructure:"listen_addr"`
+	BrokerURL   string `mapstructure:"broker_url"`
+	ClientID    string `mapstructure:"client_id"`
+	Username    string `mapstructure:"username"`
+	Password    string `mapstructure:"password"`
 }
 
 var Cfg *Config

@@ -17,8 +17,8 @@ import (
 )
 
 // 用户相关API
-func RegisterUserRoutes(app *fiber.App) {
-	r := app.Group("/api/user")
+func RegisterUserRoutes(router fiber.Router) {
+	r := router.Group("/user")
 	r.Post("/register", userRegister)
 	r.Post("/login", userLogin)
 	// protected routes
@@ -279,7 +279,6 @@ func deleteUser(c *fiber.Ctx) error {
 	}
 	// write operation log
 	uid := c.Locals("userId").(int)
-	tid := c.Locals("tenantId").(int)
 	log := model.OperationLog{TenantID: uint(tid), UserID: uint(uid), Action: "user:delete", Detail: fmt.Sprintf("Deleted user ID:%d", id)}
 	service.OperationLogService.Create(&log)
 	return c.JSON(fiber.Map{"code": 200, "message": "删除成功", "data": nil})

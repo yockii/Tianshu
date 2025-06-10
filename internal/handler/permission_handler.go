@@ -11,8 +11,8 @@ import (
 )
 
 // Permission相关API
-func RegisterPermissionRoutes(app *fiber.App) {
-	r := app.Group("/api/permission")
+func RegisterPermissionRoutes(router fiber.Router) {
+	r := router.Group("/permission")
 	r.Use(middleware.AuthMiddleware)
 	r.Post("", middleware.RequirePermission("permission:create"), createPermission)
 	r.Get("/list", middleware.RequirePermission("permission:list"), listPermissions)

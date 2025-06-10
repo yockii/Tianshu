@@ -21,8 +21,8 @@ func listUserPermissions(c *fiber.Ctx) error {
 }
 
 // 关系相关API
-func RegisterRelationRoutes(app *fiber.App) {
-	r := app.Group("/api/relation")
+func RegisterRelationRoutes(router fiber.Router) {
+	r := router.Group("/relation")
 	r.Use(middleware.AuthMiddleware)
 	r.Post("/user-role", middleware.RequirePermission("relation:user-role:assign"), assignRoleToUser)
 	r.Delete("/user-role", middleware.RequirePermission("relation:user-role:remove"), removeRoleFromUser)

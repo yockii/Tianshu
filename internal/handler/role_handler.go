@@ -11,8 +11,8 @@ import (
 )
 
 // 角色相关API
-func RegisterRoleRoutes(app *fiber.App) {
-	r := app.Group("/api/role")
+func RegisterRoleRoutes(router fiber.Router) {
+	r := router.Group("/role")
 	r.Use(middleware.AuthMiddleware)
 	r.Post("", middleware.RequirePermission("role:create"), createRole)
 	r.Get("/list", middleware.RequirePermission("role:list"), listRoles)

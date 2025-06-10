@@ -11,8 +11,8 @@ import (
 )
 
 // 租户相关API
-func RegisterTenantRoutes(app *fiber.App) {
-	r := app.Group("/api/tenant")
+func RegisterTenantRoutes(router fiber.Router) {
+	r := router.Group("/tenant")
 	// Protected tenant routes require authentication
 	r.Use(middleware.AuthMiddleware)
 	r.Get("/profile", tenantProfile)

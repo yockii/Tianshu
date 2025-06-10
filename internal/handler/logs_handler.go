@@ -9,8 +9,8 @@ import (
 )
 
 // 操作日志相关API
-func RegisterLogRoutes(app *fiber.App) {
-	r := app.Group("/api/logs")
+func RegisterLogRoutes(router fiber.Router) {
+	r := router.Group("/logs")
 	r.Use(middleware.AuthMiddleware)
 	r.Get("", middleware.RequirePermission("logs:list"), listLogs)
 }
