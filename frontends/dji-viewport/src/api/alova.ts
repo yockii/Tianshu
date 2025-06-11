@@ -5,7 +5,7 @@ import LZString from 'lz-string';
 
 export const alovaInstance = createAlova({
     requestAdapter: adapterFetch(),
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1',
+    baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
     statesHook: vueHook,
     beforeRequest: (method) => {
         if(method.data && !(method.data instanceof FormData)) {

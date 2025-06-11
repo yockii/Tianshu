@@ -3,7 +3,6 @@ module github.com/yockii/Tianshu
 go 1.24.3
 
 require (
-	github.com/eclipse/paho.mqtt.golang v1.5.0
 	github.com/gofiber/fiber/v2 v2.52.8
 	github.com/gomodule/redigo v1.9.2
 	github.com/spf13/viper v1.20.1
@@ -14,7 +13,6 @@ require (
 require (
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/rs/xid v1.4.0 // indirect
-	golang.org/x/net v0.33.0 // indirect
 )
 
 require (
