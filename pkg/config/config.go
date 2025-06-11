@@ -16,13 +16,11 @@ type Config struct {
 	JWT      JWTConfig
 	Tenant   TenantConfig
 	MQTT     MQTTConfig
+	Dji      DjiConfig
 }
 
 type ServerConfig struct {
-	Port                 int `mapstructure:"port"`
-	UserPortalPort       int `mapstructure:"user_portal_port"`
-	AdminPortalPort      int `mapstructure:"admin_portal_port"`
-	CockpitDashboardPort int `mapstructure:"cockpit_dashboard_port"`
+	Port int `mapstructure:"port"`
 }
 
 type DatabaseConfig struct {
@@ -59,6 +57,12 @@ type MQTTConfig struct {
 	ClientID    string `mapstructure:"client_id"`
 	Username    string `mapstructure:"username"`
 	Password    string `mapstructure:"password"`
+}
+
+type DjiConfig struct {
+	AppId      string `mapstructure:"app_id"`
+	AppKey     string `mapstructure:"app_key"`
+	AppLicense string `mapstructure:"app_license"`
 }
 
 var Cfg *Config

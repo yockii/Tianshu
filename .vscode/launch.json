@@ -6,11 +6,11 @@
     "configurations": [
         // 启动租户/用户后端go程序
         {
-            "name": "Launch Tenant/User Backend",
+            "name": "Launch Backend",
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "${workspaceFolder}/cmd/user-portal/main.go",
+            "program": "${workspaceFolder}/cmd/main.go",
             "env": {
                 "GO_ENV": "development"
             },

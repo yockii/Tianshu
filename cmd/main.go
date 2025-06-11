@@ -5,11 +5,15 @@ import (
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/yockii/Tianshu/internal/handler"
+	"github.com/yockii/Tianshu/internal/middleware"
 	"github.com/yockii/Tianshu/internal/model"
 	"github.com/yockii/Tianshu/internal/mqtt"
 	"github.com/yockii/Tianshu/pkg/cache"
 	"github.com/yockii/Tianshu/pkg/config"
+
 	"github.com/yockii/Tianshu/pkg/db"
 )
 
@@ -33,10 +37,16 @@ func main() {
 
 	app := fiber.New()
 
+	app.Use(recover.New())
+	app.Use(cors.New())
+	app.Use(middleware.LZStringMiddleware())
+
 	// 注册路由
 	// 用户端
 	{
 		userEndpoint := app.Group("/api/v1/")
+		handler.RegisterCloudAPIRoutes(userEndpoint)
+
 		handler.RegisterTenantRoutes(userEndpoint)
 		handler.RegisterUserRoutes(userEndpoint)
 		// Role, Permission, Relation and Log routes
@@ -46,7 +56,7 @@ func main() {
 		handler.RegisterLogRoutes(userEndpoint)
 	}
 
-	portStr := strconv.Itoa(config.Cfg.Server.CockpitDashboardPort)
+	portStr := strconv.Itoa(config.Cfg.Server.Port)
 	log.Printf("Cockpit Dashboard running at :%s", portStr)
 	log.Fatal(app.Listen(":" + portStr))
 }
