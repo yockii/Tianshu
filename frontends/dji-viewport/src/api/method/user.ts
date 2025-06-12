@@ -1,10 +1,6 @@
+import { type LoginResponse } from "@/types/user";
 import { alovaInstance } from "../alova";
 
-export const login = (username: string, password: string) => {
-    return alovaInstance.Post('/login', {
-        params: {
-            username,
-            password
-        }
-    });
+export const login = (loginRequest: {username: string, password: string, tenantName: string}) => {
+    return alovaInstance.Post<LoginResponse>('/user/login',loginRequest);
 }

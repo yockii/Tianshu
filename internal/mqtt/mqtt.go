@@ -2,6 +2,7 @@
 package mqtt
 
 import (
+	"fmt"
 	"log"
 
 	mqttSrv "github.com/mochi-mqtt/server/v2"
@@ -17,16 +18,28 @@ func Start() {
 	Server = mqttSrv.New(&mqttSrv.Options{
 		InlineClient: true, // Enable inline client for subscribing to topics
 	})
-	_ = Server.AddHook(new(auth.AllowHook), nil)
+	_ = Server.AddHook(new(auth.Hook), &auth.Options{
+		Ledger: &auth.Ledger{
+			Auth: auth.AuthRules{
+				{Username: "dji", Password: "dji", Allow: true},     // Example user
+				{Username: "admin", Password: "admin", Allow: true}, // Example admin user
+			},
+		},
+	})
 
-	tcp := listeners.NewTCP("t1", config.Cfg.MQTT.ListenAddr, nil)
+	tcp := listeners.NewTCP("t1", fmt.Sprintf(":%d", config.Cfg.MQTT.TcpAddr), nil)
 	if err := Server.AddListener(tcp); err != nil {
 		log.Fatalf("failed to add MQTT TCP listener: %v", err)
 	}
 
+	ws := listeners.NewWebsocket("w1", fmt.Sprintf(":%d", config.Cfg.MQTT.WsAddr), nil)
+	if err := Server.AddListener(ws); err != nil {
+		log.Fatalf("failed to add MQTT WebSocket listener: %v", err)
+	}
+
 	// Start broker
 	go func() {
-		log.Printf("Starting embedded MQTT broker at %s", config.Cfg.MQTT.ListenAddr)
+		log.Printf("Starting embedded MQTT broker at %d", config.Cfg.MQTT.TcpAddr)
 		if err := Server.Serve(); err != nil {
 			log.Fatalf("MQTT broker stopped: %v", err)
 		}

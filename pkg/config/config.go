@@ -52,7 +52,8 @@ type TenantConfig struct {
 // MQTTConfig holds settings for embedded broker and DJI Cloud MQTT connection
 type MQTTConfig struct {
 	UseEmbedded bool   `mapstructure:"use_embedded"`
-	ListenAddr  string `mapstructure:"listen_addr"`
+	TcpAddr     int    `mapstructure:"tcp_addr"`
+	WsAddr      int    `mapstructure:"ws_addr"`
 	BrokerURL   string `mapstructure:"broker_url"`
 	ClientID    string `mapstructure:"client_id"`
 	Username    string `mapstructure:"username"`

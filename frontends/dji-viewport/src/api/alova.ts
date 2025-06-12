@@ -1,3 +1,4 @@
+import { config } from '@/config/config';
 import {createAlova} from 'alova';
 import adapterFetch  from 'alova/fetch';
 import vueHook from 'alova/vue';
@@ -5,7 +6,7 @@ import LZString from 'lz-string';
 
 export const alovaInstance = createAlova({
     requestAdapter: adapterFetch(),
-    baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
+    baseURL: config.baseUrl,
     statesHook: vueHook,
     beforeRequest: (method) => {
         if(method.data && !(method.data instanceof FormData)) {
@@ -17,7 +18,7 @@ export const alovaInstance = createAlova({
         if (!method.meta?.ignoreToken) {
             const token = localStorage.getItem('token');
             if (token) {
-                method.config.headers.Authorization = `Bearer ${token}`;
+                method.config.headers['X-Auth-Token'] = token;
             }
         }
     },

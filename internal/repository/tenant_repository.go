@@ -19,6 +19,15 @@ func (r *tenantRepository) GetByID(id uint) (*model.Tenant, error) {
 	return &tenant, nil
 }
 
+func (r *tenantRepository) GetByName(name string) (*model.Tenant, error) {
+	var tenant model.Tenant
+	err := db.DB.Preload("Customization").Where("name = ?", name).First(&tenant).Error
+	if err != nil {
+		return nil, err
+	}
+	return &tenant, nil
+}
+
 func (r *tenantRepository) GetByDomain(domain string) (*model.Tenant, error) {
 	var tenant model.Tenant
 	err := db.DB.Preload("Customization").Where("domain = ?", domain).First(&tenant).Error

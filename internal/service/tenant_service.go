@@ -14,6 +14,10 @@ func (s *tenantService) GetByID(id uint) (*model.Tenant, error) {
 	return repository.TenantRepository.GetByID(id)
 }
 
+func (s *tenantService) GetByName(name string) (*model.Tenant, error) {
+	return repository.TenantRepository.GetByName(name)
+}
+
 func (s *tenantService) GetByDomain(domain string) (*model.Tenant, error) {
 	return repository.TenantRepository.GetByDomain(domain)
 }

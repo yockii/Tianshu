@@ -84,10 +84,9 @@ func userRegister(c *fiber.Ctx) error {
 func userLogin(c *fiber.Ctx) error {
 	// 登录逻辑：域名或tenantId + 用户名 + 密码
 	type LoginRequest struct {
-		Domain   string `json:"domain"`
-		TenantId uint   `json:"tenantId"`
-		Username string `json:"username"`
-		Password string `json:"password"`
+		TenantName string `json:"tenantName"`
+		Username   string `json:"username"`
+		Password   string `json:"password"`
 	}
 	var req LoginRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -95,13 +94,11 @@ func userLogin(c *fiber.Ctx) error {
 	}
 	var ten *model.Tenant
 	var err error
-	if req.Domain != "" {
-		// 优先使用域名
-		ten, err = service.TenantService.GetByDomain(req.Domain)
-	} else if req.TenantId != 0 {
-		ten, err = service.TenantService.GetByID(req.TenantId)
+	if req.TenantName == "" {
+		// 获取域名
+		return c.Status(400).JSON(fiber.Map{"code": 400, "message": "租户名称不能为空"})
 	} else {
-		return c.Status(400).JSON(fiber.Map{"code": 400, "message": "请提供租户域名或ID"})
+		ten, err = service.TenantService.GetByName(req.TenantName)
 	}
 	if err != nil {
 		return c.Status(404).JSON(fiber.Map{"code": 404, "message": "租户不存在"})

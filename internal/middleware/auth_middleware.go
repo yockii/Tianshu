@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"strconv"
 
 	jwt "github.com/dgrijalva/jwt-go"
@@ -14,12 +13,10 @@ import (
 // AuthMiddleware validates JWT, stores tenantId and userId in Redis with a session key and attaches data to context
 func AuthMiddleware(c *fiber.Ctx) error {
 	// Extract token
-	auth := c.Get("Authorization")
-	if auth == "" {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "缺少Authorization头"})
+	tokenStr := c.Get("X-Auth-Token")
+	if tokenStr == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "缺少X-Auth-Token头"})
 	}
-	var tokenStr string
-	fmt.Sscanf(auth, "Bearer %s", &tokenStr)
 
 	// Parse JWT
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {

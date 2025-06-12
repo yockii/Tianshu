@@ -25,15 +25,24 @@ import { ref, onMounted } from 'vue'
 import { MessagePlugin } from 'tdesign-vue-next'
 import { getCloudApiInfo } from '@/api/method/sys'
 import pilotBridge from '@/dji/pilot-bridge'
+import { login } from '@/api/method/user'
+import type { LoginResponse } from '@/types/user'
+import { config } from '@/config/config'
+import { useUserStore } from '@/stores/user'
+import { useRouter } from 'vue-router'
 
 
 const isVerified = ref<boolean>(false)
 const user = ref({
+    tenantName: 'default',
     username: '',
     password: ''
 })
 
-const onLogin = () => {
+const router = useRouter()
+const userStore = useUserStore()
+
+const onLogin = async () => {
     if (!isVerified.value) {
         MessagePlugin.error('大疆许可证校验失败，请联系管理员处理')
         return
@@ -42,7 +51,8 @@ const onLogin = () => {
     if (user.value.username && user.value.password) {
         // 模拟登录逻辑
         console.log('登录信息:', user.value)
-        // 在这里可以添加实际的登录请求逻辑
+        const result = await login(user.value)
+        signedIn(result)
     } else {
         console.error('用户名或密码不能为空')
     }
@@ -55,11 +65,31 @@ onMounted(async () => {
     }
 })
 
+const signedIn = (result: LoginResponse) => {
+    if (result.token) {
+        pilotBridge.loadModule('api', {
+            host: config.baseUrl,
+            token: result.token,
+        })
+
+        userStore.setToken(result.token)
+        userStore.setUser(result.user)
+
+        MessagePlugin.success('登录成功!')
+        // 跳转到主页面
+        router.push({ name: 'Home' })
+    } else {
+        MessagePlugin.error('登录失败，请检查用户名和密码')
+        console.error('登录失败:', result)
+    }
+}
+
 const verifyLicense = async () => {
     const cloudApiInfo = await getCloudApiInfo()
     console.log('Cloud API Info:', cloudApiInfo)
     isVerified.value = pilotBridge.platformVerifyLicense(cloudApiInfo.appId, cloudApiInfo.appKey, cloudApiInfo.appLicense)
     if (isVerified.value) {
+        pilotBridge.setPlatformMessage('天枢无人机平台', '欢迎使用', '请登录以继续')
         MessagePlugin.success('许可证校验成功!')
     } else {
         MessagePlugin.error('大疆许可证校验失败，请联系管理员处理')
@@ -93,6 +123,14 @@ const verifyLicense = async () => {
 
 .exchange-icon {
     font-size: 48px;
+    /* 增加定时闪烁 */
+    animation: blink 5s infinite;
+    color: #aaaaaa;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.1; }
 }
 
 .text-row {
