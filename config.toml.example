@@ -2,9 +2,7 @@
 
 [server]
 port = 8080
-user_portal_port = 8081
-admin_portal_port = 8082
-cockpit_dashboard_port = 8083
+public_domain = "192.168.1.100"
 
 [database]
 host = "localhost"
@@ -30,7 +28,8 @@ default_theme = "light"
 
 [mqtt]
 use_embedded = true
-listen_addr = ":1883"
+tcp_port = 1883
+ws_port = 1882
 
 [dji]
 app_id = ""

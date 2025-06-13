@@ -27,23 +27,35 @@ func Start() {
 		},
 	})
 
-	tcp := listeners.NewTCP("t1", fmt.Sprintf(":%d", config.Cfg.MQTT.TcpAddr), nil)
+	tcp := listeners.NewTCP("t1", fmt.Sprintf(":%d", config.Cfg.MQTT.TcpPort), nil)
 	if err := Server.AddListener(tcp); err != nil {
 		log.Fatalf("failed to add MQTT TCP listener: %v", err)
 	}
 
-	ws := listeners.NewWebsocket("w1", fmt.Sprintf(":%d", config.Cfg.MQTT.WsAddr), nil)
+	ws := listeners.NewWebsocket("w1", fmt.Sprintf(":%d", config.Cfg.MQTT.WsPort), nil)
 	if err := Server.AddListener(ws); err != nil {
 		log.Fatalf("failed to add MQTT WebSocket listener: %v", err)
 	}
 
 	// Start broker
 	go func() {
-		log.Printf("Starting embedded MQTT broker at %d", config.Cfg.MQTT.TcpAddr)
+		log.Printf("Starting embedded MQTT broker at %d", config.Cfg.MQTT.TcpPort)
 		if err := Server.Serve(); err != nil {
 			log.Fatalf("MQTT broker stopped: %v", err)
 		}
 	}()
+
+	// 每10秒打印一次客户端数量
+	// go func() {
+	// 	for {
+	// 		if Server != nil {
+	// 			clientCount := Server.Clients.Len()
+	// 			log.Printf("Current MQTT client count: %d", clientCount)
+	// 		}
+	// 		// Sleep for 10 seconds
+	// 		time.Sleep(10 * time.Second)
+	// 	}
+	// }()
 }
 
 func Close() {

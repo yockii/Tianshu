@@ -20,7 +20,8 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Port int `mapstructure:"port"`
+	Port         int    `mapstructure:"port"`
+	PublicDomain string `mapstructure:"public_domain"`
 }
 
 type DatabaseConfig struct {
@@ -52,8 +53,8 @@ type TenantConfig struct {
 // MQTTConfig holds settings for embedded broker and DJI Cloud MQTT connection
 type MQTTConfig struct {
 	UseEmbedded bool   `mapstructure:"use_embedded"`
-	TcpAddr     int    `mapstructure:"tcp_addr"`
-	WsAddr      int    `mapstructure:"ws_addr"`
+	TcpPort     int    `mapstructure:"tcp_port"`
+	WsPort      int    `mapstructure:"ws_port"`
 	BrokerURL   string `mapstructure:"broker_url"`
 	ClientID    string `mapstructure:"client_id"`
 	Username    string `mapstructure:"username"`

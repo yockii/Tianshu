@@ -32,11 +32,11 @@ func getConnectInfo(c *fiber.Ctx) error {
 		"code":    200,
 		"message": "获取连接信息成功",
 		"data": fiber.Map{
-			"mqttTcpAddr":  fmt.Sprintf(":%d", config.Cfg.MQTT.TcpAddr),
-			"mqttWsAddr":   fmt.Sprintf(":%d", config.Cfg.MQTT.WsAddr),
+			"mqttTcpAddr":  fmt.Sprintf("mqtt://%s:%d", config.Cfg.Server.PublicDomain, config.Cfg.MQTT.TcpPort),
+			"mqttWsAddr":   fmt.Sprintf("ws://%s:%d", config.Cfg.Server.PublicDomain, config.Cfg.MQTT.WsPort),
 			"mqttUsername": "dji",
 			"mqttPassword": "dji",
-			"wsAddr":       fmt.Sprintf(":%d/ws", config.Cfg.Server.Port),
+			"wsAddr":       fmt.Sprintf("ws://%s:%d/ws", config.Cfg.Server.PublicDomain, config.Cfg.Server.Port),
 		},
 	})
 }

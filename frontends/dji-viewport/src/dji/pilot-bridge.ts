@@ -3,10 +3,13 @@ declare global {
   interface Window {
     thingConnectCallback?: (arg: any) => void;
     djiBridge: {
+      platformIsVerified: () => string
       platformVerifyLicense: (appId: string, appKey: string, appLicense: string) => string
       platformSetInformation: (platformName: string, title: string, desc: string) => string
       platformLoadComponent: (moduleName: string, param: string) => string
       apiSetToken: (token?: string) => string
+      platformGetRemoteControllerSN: () => string
+      platformGetAircraftSN?: () => string
       onBackClick: () => void
       onStopPlatform: () => void
     }
@@ -20,7 +23,14 @@ interface JsResponse {
 }
 
 export default {
-  platformVerifyLicense(appId: string, appKey: string, appLicense: string): boolean {
+  isVerified(): boolean {
+    if (!window.djiBridge || !window.djiBridge.platformIsVerified) {
+      console.error('djiBridge is not available')
+      return false
+    }
+    return returnBool(window.djiBridge.platformIsVerified())
+  },
+  verifyLicense(appId: string, appKey: string, appLicense: string): boolean {
     if (!window.djiBridge || !window.djiBridge.platformVerifyLicense) {
       console.error('djiBridge is not available')
       return false
@@ -50,6 +60,20 @@ export default {
     }
     const response = window.djiBridge.apiSetToken(token)
     return returnString(response)
+  },
+  getRemoteControllerSN () :string {
+    if (!window.djiBridge || !window.djiBridge.platformGetRemoteControllerSN) {
+      console.error('djiBridge is not available')
+      return ''
+    }
+    return returnString(window.djiBridge.platformGetRemoteControllerSN())
+  },
+   getAircraftSN ():string {
+    if (!window.djiBridge || !window.djiBridge.platformGetAircraftSN) {
+      console.error('djiBridge is not available')
+      return ''
+    }
+    return returnString(window.djiBridge.platformGetAircraftSN())
   },
   onBackClick(callback: () => void): void {
     if (!window.djiBridge || !window.djiBridge.onBackClick) {

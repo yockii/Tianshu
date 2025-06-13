@@ -85,9 +85,13 @@ const signedIn = (result: LoginResponse) => {
 }
 
 const verifyLicense = async () => {
-    const cloudApiInfo = await getCloudApiInfo()
-    console.log('Cloud API Info:', cloudApiInfo)
-    isVerified.value = pilotBridge.platformVerifyLicense(cloudApiInfo.appId, cloudApiInfo.appKey, cloudApiInfo.appLicense)
+    if (pilotBridge.isVerified()) {
+        isVerified.value = true
+    } else {
+        const cloudApiInfo = await getCloudApiInfo()
+        console.log('Cloud API Info:', cloudApiInfo)
+        isVerified.value = pilotBridge.verifyLicense(cloudApiInfo.appId, cloudApiInfo.appKey, cloudApiInfo.appLicense)
+    }
     if (isVerified.value) {
         pilotBridge.setPlatformMessage('天枢无人机平台', '欢迎使用', '请登录以继续')
         MessagePlugin.success('许可证校验成功!')
